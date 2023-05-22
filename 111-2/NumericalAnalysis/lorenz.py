@@ -1,6 +1,4 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from vpython import *
 
 def lorenz(x, y, z, s=10, r=28.5, b=8/3):
     x_dot = s*(y - x)
@@ -11,27 +9,55 @@ def lorenz(x, y, z, s=10, r=28.5, b=8/3):
 dt = 0.01
 num_steps = 10000
 
-xs = np.empty(num_steps + 1)
-ys = np.empty(num_steps + 1)
-zs = np.empty(num_steps + 1)
+x = 0.1
+y = 20
+z = 1.05
 
-# Set initial conditions
-xs[0], ys[0], zs[0] = (0.1, 20, 1.05)
+scene = canvas(title="Lorenz Model", width=800, height=600, background = color.white)
+line = curve(color=color.red, radius=0.1)
 
-# Run the simulation
+# Variables to store mouse drag information
+dragging = False
+prev_x = None
+prev_y = None
+
+# Function to handle mouse drag events
+def on_mouse_down(event):
+    global dragging, prev_x, prev_y
+    dragging = True
+    prev_x = event.pos.x
+    prev_y = event.pos.y
+
+def on_mouse_move(event):
+    global dragging, prev_x, prev_y
+    if dragging:
+        dx = (event.pos.x - prev_x) / scene.width
+        dy = (event.pos.y - prev_y) / scene.height
+        scene.camera.rotate(phi=4 * dx * pi, angle=4 * dy * pi)
+        prev_x = event.pos.x
+        prev_y = event.pos.y
+
+def on_mouse_up(event):
+    global dragging
+    dragging = False
+
+# Bind mouse events to handle dragging and rotation
+scene.bind("mousedown", on_mouse_down)
+scene.bind("mousemove", on_mouse_move)
+scene.bind("mouseup", on_mouse_up)
+
+# Create axes
+x_axis = arrow(pos=vector(-20, 0, 0), axis=vector(40, 0, 0), color=color.white, shaftwidth=0.2)
+y_axis = arrow(pos=vector(0, -30, 0), axis=vector(0, 60, 0), color=color.white, shaftwidth=0.2)
+z_axis = arrow(pos=vector(0, 0, -30), axis=vector(0, 0, 60), color=color.white, shaftwidth=0.2)
+
 for i in range(num_steps):
-    x_dot, y_dot, z_dot = lorenz(xs[i], ys[i], zs[i])
-    xs[i + 1] = xs[i] + (x_dot * dt)
-    ys[i + 1] = ys[i] + (y_dot * dt)
-    zs[i + 1] = zs[i] + (z_dot * dt)
+    rate(1000)
 
-# Plot the results
-fig = plt.figure(figsize=(12, 9))
-ax = fig.add_subplot(111, projection='3d')
-ax.plot(xs, ys, zs, lw=0.5)
-ax.set_xlabel("X Axis")
-ax.set_ylabel("Y Axis")
-ax.set_zlabel("Z Axis")
-ax.set_title("Lorenz Model")
+    x_dot, y_dot, z_dot = lorenz(x, y, z)
+    x += x_dot * dt
+    y += y_dot * dt
+    z += z_dot * dt
 
-plt.show()
+    line.append(pos=vector(x, y, z))
+
