@@ -47,9 +47,9 @@ scene.bind("mousemove", on_mouse_move)
 scene.bind("mouseup", on_mouse_up)
 
 # Create axes
-x_axis = arrow(pos=vector(-20, 0, 0), axis=vector(40, 0, 0), color=color.white, shaftwidth=0.2)
-y_axis = arrow(pos=vector(0, -30, 0), axis=vector(0, 60, 0), color=color.white, shaftwidth=0.2)
-z_axis = arrow(pos=vector(0, 0, -30), axis=vector(0, 0, 60), color=color.white, shaftwidth=0.2)
+x_axis = arrow(pos=vector(-20, 0, 0), axis=vector(80, 0, 0), color=color.white, shaftwidth=0.2)
+y_axis = arrow(pos=vector(0, -30, 0), axis=vector(0, 120, 0), color=color.white, shaftwidth=0.2)
+z_axis = arrow(pos=vector(0, 0, -30), axis=vector(0, 0, 120), color=color.white, shaftwidth=0.2)
 
 for i in range(num_steps):
     rate(1000)
