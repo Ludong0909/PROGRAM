@@ -252,9 +252,16 @@ def Solve_Tc(Tc):
     
     ***Variables below need to be define before calculation.***
     '''
+
+    # Set the values of the variables used in the function
+    qvi = 0
     P0 = 1000
     T0 = 300
-    qvi = 0
+    epsilon = 0.622
+    A = 2.53*10**9
+    B = 5420
+    kp = Cp/Rd
 
-    f = B / (np.log(((A * epsilon / (P0 * qvi))*(T0/Tc))**(Cp/Rd))) - Tc
+    # Calculate the value of the function and return it
+    f = Tc - B/np.log(((A*epsilon)/(qvi*P0))*(T0/Tc)**kp)
     return f
