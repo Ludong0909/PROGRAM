@@ -2,6 +2,7 @@ import numpy as np
 import Mog
 import matplotlib.pyplot as plt
 from scipy import interpolate as intp
+import scipy.optimize as opt
 
 # !!!NOTE!!! data is adjusted to ab. decreasing/increasing
 H_env,P_env,T_env,qv_env = np.loadtxt(fname='CA8-1_data.txt',dtype=float,usecols=(0,1,2,3),skiprows=1,unpack=True)
@@ -42,7 +43,7 @@ Sd_env = Mog.DryStaticEnergy(T_env, H_env)
 
 
 
-for k in range(0,1440+1,20):
+for k in range(0,720+1,20):
 
 
     # time length
@@ -109,16 +110,94 @@ for k in range(0,1440+1,20):
     hms_in_pbl = np.ones(target_index) * Sd_env[target_index] + Lv * Mog.SaturatedSpecificHumidity(T_in_pbl, P_env[:target_index])
     hms_target[:target_index] = np.ones(target_index) * hms_in_pbl
 
+    # Compute Tc
+    def Solve_Tc(Tc):
+
+        '''
+        Using numerical method to find Tc
+        
+        ***Variables below need to be define before calculation.***
+        '''
+
+        # Set the values of the variables used in the function
+        qvi = qv_env[target_index]
+        P0 = P_env[target_index]
+        T0 = T_env[target_index]
+        epsilon = 0.622
+        A = 2.53*10**9
+        B = 5420
+        kp = Cp/Rd
+
+        # Calculate the value of the function and return it
+        f = Tc - B/np.log(((A*epsilon)/(qvi*P0))*(T0/Tc)**kp)
+        return f
+    Tc = opt.bisect(Solve_Tc, 200, 400)
+    LCL = (T_env[target_index] - Tc)/(g0/Cp) + H_env[target_index]
+    LCL_index = np.where(np.abs(H_env - LCL)<1)[0][0]
+    print('LCL = %.1f m'%LCL)
+
+    # Compute Tv
+    Tv_target = Mog.VirtualTemp(T_env[time_index], qv_env[time_index])
+    thetav = Mog.VirtualPotentialTemp(T_env[time_index], qv_env[time_index], P_env[time_index])
+
+    # Compute Gamma_m line
+    T_moist = np.array([Tc],dtype=float)
+    for i in range(1,len(H_env)-LCL_index):
+        dH = H_env[i] - H_env[i-1]
+        gamma_m = Mog.Gamma_m(T_moist[i-1], qvs_env[LCL_index+i-1])
+        T_moist = np.append(T_moist, T_moist[-1] - dH*gamma_m)
+    T_parcel = T_env.copy()
+    T_parcel[LCL_index:] = T_moist
+
+    # Find LFC, EL
+    # LFC
+    for i in range(len(T_parcel)):
+        if T_parcel[i] > T_env[i]:
+            LFC = H_env[i]
+            LFC_index = i
+            break
+    # EL
+    for i in range(LFC_index,len(T_parcel)):
+        if T_env[i] > T_parcel[i]:
+            EL = H_env[i]
+            break
+    LFC_index = np.where(np.abs(H_env - LFC)<1)[0][0]
+    EL_index = np.where(np.abs(H_env - EL)<1)[0][0]
+    print('LFC = %.1f m'%LFC)
+    print('EL = %.1f m'%EL)
+
+    # Compute Parcel Route (T_parcel = T_in_pbl + T_dry + T_moist)
+    T_parcel[:target_index] = T_in_pbl
+    T_dry = np.linspace(T_parcel[target_index], T_parcel[LCL_index], LCL_index-target_index)
+    T_parcel[target_index:LCL_index] = T_dry
+
+    # Compute CIN
+    CIN_curve = T_env[target_index:LFC_index] - T_parcel[target_index:LFC_index]
+    CIN = np.trapz(CIN_curve)
+    print('CIN = %.1f J'%CIN)
+
+    # Compute CAPE
+    CAPE_curve = T_parcel[LFC_index:EL_index] - T_env[LFC_index:EL_index]
+    CAPE = np.trapz(CAPE_curve)
+    print('CAPE = %.1f J'%CAPE)
+
+    # Plot
+    f, ax = plt.subplots(figsize = (12,6))
+    plt.plot(T_parcel, H_env)
+    plt.plot(T_env, H_env)
     plt.plot(Sd_target/Cp, H_env)
     plt.plot(hm_target/Cp, H_env)
     plt.plot(hms_target/Cp, H_env)
+    plt.axhline(LFC, linestyle = '--', color = 'blue', alpha = 0.5)
+    plt.axhline(EL, linestyle = '--', color = 'blue', alpha = 0.5)
+    plt.axhline(LCL, linestyle = '--', color = 'blue', alpha = 0.5)
     plt.axhline(H_env[target_index], linestyle = '--', color = 'black', alpha = 0.5)
-    plt.text(350, H_env[target_index]+200, 'PBL = %.1f m' %(H_env[target_index]))
-    plt.legend(['DSE_T', 'MSE_T', 'MSE*_T'], loc = 'upper left')
-    plt.ylim(0, 18000)
-    plt.xlim(295,390)
-    plt.xlabel('Temperature [K]')
-    plt.ylabel('Height [m]')
-    plt.title('Kinds of Static Energy Temp.')
+    plt.text(295, LFC+200, 'LFC = %.1f m' %(LFC), fontsize = 8)
+    plt.text(295, EL+200, 'EL = %.1f m' %(EL), fontsize = 8)
+    plt.text(295, LCL+200, 'LCL = %.1f m' %(LCL), fontsize = 8)
+    plt.text(295, H_env[target_index]+100, 'PBL = %.1f m' %(H_env[target_index]), fontsize = 8)
+    plt.legend(['T_env', 'T_parcel', 'DSE', 'MSE', 'MSE*'], loc = 'lower left')
+    plt.ylim(0,18000)
+    plt.xlim(175,400)
     plt.savefig(f'C:/Users/User/PROGRAM/111-2/ASThermodynamic/CA8/Evolution/Evolution{int(k/20)}.png', dpi = 300)
     plt.clf()

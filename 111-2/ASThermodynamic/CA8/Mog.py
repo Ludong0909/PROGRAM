@@ -265,3 +265,19 @@ def Solve_Tc(Tc):
     # Calculate the value of the function and return it
     f = Tc - B/np.log(((A*epsilon)/(qvi*P0))*(T0/Tc)**kp)
     return f
+
+
+def Gamma_m(T, qvs):
+
+    """
+    Args:
+        T: Temperature [K]
+        qvs: Specific Humidity [kg/kg]
+
+    Returns:
+        Gamma_m: moist adiabatic lapse rate [K/m]
+    """
+
+    Cp_star = Cp * ((1+(Lv**2*qvs)/(Cp*Rv*T**2))/(1+(Lv*qvs)/(Rd*T)))
+
+    return g0/Cp_star
