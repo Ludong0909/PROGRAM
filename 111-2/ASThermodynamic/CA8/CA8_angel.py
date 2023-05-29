@@ -156,6 +156,8 @@ for hr in range(len(hr12)):
     plt.legend(['DSE_T', 'MSE_T', 'MSE*_T'], loc = 'lower left')
     plt.ylim(0,18000)
     plt.xlim(290,390)
+    plt.xlabel('Temperature [K]')
+    plt.ylabel('Height [m]')
     plt.title('Evolution of XSE_T in 12hr')
     plt.savefig(f'C:/Users/User/PROGRAM/111-2/ASThermodynamic/CA8/Energy/Energy{int(hr)}.png', dpi = 300)
     plt.clf()
