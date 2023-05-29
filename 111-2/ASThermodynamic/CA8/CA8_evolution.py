@@ -42,9 +42,7 @@ hms_env = Mog.MoistStaticEnergy(T_env, H_env, qvs_env)
 Sd_env = Mog.DryStaticEnergy(T_env, H_env)
 
 
-
 for k in range(0,720+1,20):
-
 
     # time length
     duration = k
@@ -109,6 +107,9 @@ for k in range(0,720+1,20):
     hms_target = hms_env.copy()
     hms_in_pbl = np.ones(target_index) * Sd_env[target_index] + Lv * Mog.SaturatedSpecificHumidity(T_in_pbl, P_env[:target_index])
     hms_target[:target_index] = np.ones(target_index) * hms_in_pbl
+    # qv
+    qv_target = qv_env.copy()
+    qv_target[:target_index] = np.ones(target_index) * qv_mix[-1]
 
     # Compute Tc
     def Solve_Tc(Tc):
@@ -171,13 +172,17 @@ for k in range(0,720+1,20):
     T_dry = np.linspace(T_parcel[target_index], T_parcel[LCL_index], LCL_index-target_index)
     T_parcel[target_index:LCL_index] = T_dry
 
+    # Compute Tv and Tv'
+    Tv_parcel = Mog.VirtualTemp(T_parcel, qv_target)
+    Tv_env = Mog.VirtualTemp(T_env, qv_env)
+
     # Compute CIN
-    CIN_curve = T_env[target_index:LFC_index] - T_parcel[target_index:LFC_index]
+    CIN_curve = (Tv_env[target_index:LFC_index] - Tv_parcel[target_index:LFC_index])/Tv_env[target_index:LFC_index] * g0
     CIN = np.trapz(CIN_curve)
     print('CIN = %.1f J'%CIN)
 
     # Compute CAPE
-    CAPE_curve = T_parcel[LFC_index:EL_index] - T_env[LFC_index:EL_index]
+    CAPE_curve = (Tv_parcel[LFC_index:EL_index] - Tv_env[LFC_index:EL_index])/Tv_env[LFC_index:EL_index] * g0
     CAPE = np.trapz(CAPE_curve)
     print('CAPE = %.1f J'%CAPE)
 
@@ -196,8 +201,8 @@ for k in range(0,720+1,20):
     plt.text(295, EL+200, 'EL = %.1f m' %(EL), fontsize = 8)
     plt.text(295, LCL+200, 'LCL = %.1f m' %(LCL), fontsize = 8)
     plt.text(295, H_env[target_index]+100, 'PBL = %.1f m' %(H_env[target_index]), fontsize = 8)
-    plt.legend(['T_env', 'T_parcel', 'DSE', 'MSE', 'MSE*'], loc = 'lower left')
+    plt.legend(['T_parcel', 'T_env', 'DSE', 'MSE', 'MSE*'], loc = 'lower left')
     plt.ylim(0,18000)
-    plt.xlim(175,400)
+    plt.xlim(175,390)
     plt.savefig(f'C:/Users/User/PROGRAM/111-2/ASThermodynamic/CA8/Evolution/Evolution{int(k/20)}.png', dpi = 300)
     plt.clf()
