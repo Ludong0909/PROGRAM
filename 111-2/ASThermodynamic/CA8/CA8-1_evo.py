@@ -5,7 +5,7 @@ import mog_angel as mog
 import copy as c
 from scipy.interpolate import interp1d
 
-H_ini, P_ini, T_ini, qv_ini = np.loadtxt('CA8-1_data.txt',skiprows=1,usecols=(0,1,2,3),unpack=True,dtype=float)
+H_ini, P_ini, T_ini, qv_ini = np.loadtxt('CA8-2_data.txt',skiprows=1,usecols=(0,1,2,3),unpack=True,dtype=float)
 
 H = np.linspace(0, 20000, 2001)
 f1 = interp1d(H_ini, P_ini, kind = 'linear', fill_value = 'extrapolate')

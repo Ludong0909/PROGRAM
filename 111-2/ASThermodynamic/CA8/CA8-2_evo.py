@@ -93,11 +93,6 @@ for hr in range(len(hr12)):
         qv_fin = qv_heat
         qvs_fin = qvs_heat
     
-    # Sd, hm, hms
-    Sd = mog.Sd(T_fin, H)
-    hm = mog.hm(T_fin, H, qv_fin)
-    hms = mog.hms(T_fin, H, qvs_fin)
-
     # LCL
     p_T = np.zeros(len(H)) + T_fin[0] 
     p_qv = np.zeros(len(H)) + qv_fin[0]
@@ -146,29 +141,7 @@ for hr in range(len(hr12)):
         CAPE[hr] = mog.CAPE(LFC[hr], EL[hr], H, p_qv, qv_fin, p_T, T_fin)
         CIN[hr] = mog.CIN(LFC[hr], H, p_qv, qv_fin, p_T, T_fin)
 
-    # Plot evolution
-    f, ax = plt.subplots(figsize = (12,6))
-    plt.plot(Sd/Cp, H)
-    plt.plot(hm/Cp, H)
-    plt.plot(hms/Cp, H)
-    plt.axhline(H_LFC[hr], linestyle = '--', color = 'blue', alpha = 0.5)
-    plt.axhline(H_EL[hr], linestyle = '--', color = 'blue', alpha = 0.5)
-    plt.axhline(H_LCL[hr], linestyle = '--', color = 'blue', alpha = 0.5)
-    plt.axhline(H[hr], linestyle = '--', color = 'black', alpha = 0.5)
-    plt.text(360, H_LFC[hr]+200, 'LFC = %.1f m' %(H_LFC[hr]), fontsize = 8)
-    plt.text(360, H_EL[hr]+200, 'EL = %.1f m' %(H_EL[hr]), fontsize = 8)
-    plt.text(360, H_LCL[hr]+200, 'LCL = %.1f m' %(H_LCL[hr]), fontsize = 8)
-    plt.text(360, H[hr]+100, 'PBL = %.1f m' %(H[hr]), fontsize = 8)
-    plt.legend(['DSE_T', 'MSE_T', 'MSE*_T'], loc = 'lower left')
-    plt.ylim(0,18000)
-    plt.xlim(290,390)
-    plt.xlabel('Temperature [K]')
-    plt.ylabel('Height [m]')
-    plt.title('Evolution of XSE_T in 12hr')
-    plt.savefig(f'C:/Users/User/PROGRAM/111-2/ASThermodynamic/CA8/Energy/CA8-2Energy{int(hr)}.png', dpi = 300)
-    plt.clf()
-
-
+f, ax = plt.subplots(figsize = (12,8))
 plt.plot(hr12/3600, CAPE, 'red')
 plt.plot(hr12/3600, CIN, 'blue')
 plt.xlim([0,12])
@@ -176,20 +149,21 @@ plt.grid()
 plt.xlabel('time [hr]')
 plt.ylabel('height [m]')
 plt.title('Evolution of CAPE and CIN in 12hr')
-plt.savefig('1_CAPE_evolution.png', dpi=500)
+plt.legend(['CAPE', 'CIN'])
+plt.savefig('2_CAPE_evolution.png', dpi=500)
 plt.show()
 
-
+f, ax = plt.subplots(figsize = (12,8))
 plt.plot(hr12/3600, H_EL)
 plt.plot(hr12/3600, H_LFC)
 plt.plot(hr12/3600, H_LCL)
 plt.plot(time/3600, H, 'k', alpha=0.7)
 plt.grid()
 plt.xlim([0,12])
-plt.ylim([0,20000])
+plt.ylim([0,14000])
 plt.xlabel('time [hr]')
 plt.ylabel('height [m]')
 plt.legend(['EL','LFC','LCL','Hm'], fontsize = 9, loc='upper left')
 plt.title('Evolution of $H_m$, LCL, LFC, EL in 12hr')
-plt.savefig('1_time_evolution.png', dpi=500)
+plt.savefig('2_time_evolution.png', dpi=500)
 plt.show()
