@@ -16,7 +16,7 @@ character_color = (255, 0, 0)  # Red
 character_position = [width // 2 - character_size // 2, height // 2 - character_size // 2]
 
 # Enemy properties
-enemy_size = 15
+enemy_size = 16
 enemy_color = (0, 0, 255)  # Blue
 enemy_speed = 2
 enemies = []
@@ -39,6 +39,18 @@ spawn_timer = 0
 attack_timer = 0
 clock = pygame.time.Clock()
 
+
+def character_move():
+    if keys[pygame.K_w]:
+        character_position[1] -= character_speed
+    if keys[pygame.K_s]:
+        character_position[1] += character_speed
+    if keys[pygame.K_a]:
+        character_position[0] -= character_speed
+    if keys[pygame.K_d]:
+        character_position[0] += character_speed
+
+
 def move_towards_character(enemy):
     dx = character_position[0] - enemy.x
     dy = character_position[1] - enemy.y
@@ -47,6 +59,15 @@ def move_towards_character(enemy):
     dy = dy / distance
     enemy.x += dx * enemy_speed + 4 * (random.random() - 0.5) * enemy_speed
     enemy.y += dy * enemy_speed + 4 * (random.random() - 0.5) * enemy_speed
+
+
+def spawn_enemy():
+    r = random.randint(100 + int(enemy_size / 2), 150 + int(enemy_size / 2))
+    r_angle = 2 * math.pi * random.random()
+    x = character_position[0] + int(r * math.cos(r_angle))
+    y = character_position[1] + int(r * math.sin(r_angle))
+    enemies.append(pygame.Rect(x, y, enemy_size, enemy_size))
+
 
 def check_collision():
     for enemy in enemies:
@@ -58,9 +79,11 @@ def check_collision():
         return True
     return False
 
+
 def update_score():
-    score_text = font.render("Kill: " + str(kill), True, (255, 255, 255))  # Render the text surface
+    score_text = font.render('Kill: ' + str(kill), True, (255, 255, 255))  # Render the text surface
     screen.blit(score_text, (10, 10))  # Blit the text surface onto the screen
+
 
 def update_time():
     current_time = pygame.time.get_ticks()  # Get the current time in milliseconds
@@ -68,9 +91,18 @@ def update_time():
     time_text = font.render('Time: ' + str(elapsed_time), True, (255, 255, 255))  # Render the time text surface
     screen.blit(time_text, (10, 50))  # Blit the time text surface onto the screen
 
+
+def update_cd():
+    global attack_timer
+    if attack_timer < 3600:
+        cd_text = font.render('CD: ' + str(round((3600 - attack_timer) / 600, 1)), True, (255, 255, 255))
+    else:
+        cd_text = font.render('CD: 0', True, (255, 255, 255))
+    screen.blit(cd_text, (10, 90))
+
+
 def attack():
     global kill
-    keys = pygame.key.get_pressed()
     for enemy in enemies[::-1]:
         x, y = enemy.x - character_position[0], enemy.y - character_position[1]
         if keys[pygame.K_w]:
@@ -90,8 +122,9 @@ def attack():
                 enemies.remove(enemy)
                 kill += 1
 
+
 def game_over_screen():
-    global game_state, running, score, start_time
+    global game_state, running, start_time
 
     # Fill the screen with black
     screen.fill((0, 0, 0))
@@ -128,16 +161,13 @@ def game_over_screen():
 
 while running:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif game_state == GAME_STATE_GAME_OVER and event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
+        if game_state == GAME_STATE_GAME_OVER and event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
             mouse_position = pygame.mouse.get_pos()
             if restart_text.get_rect(x=width // 2 - restart_text.get_width() // 2,
                                         y=height // 2 + 50).collidepoint(mouse_position):
                 # Restart the game if the "Restart" option is clicked
                 kill = 0
                 enemies.clear()
-                attack_timer = 0
                 game_state = GAME_STATE_PLAYING
                 start_time = pygame.time.get_ticks()
                 character_position = [width // 2 - character_size // 2, height // 2 - character_size // 2]
@@ -147,62 +177,45 @@ while running:
                 running = False
 
     if game_state == GAME_STATE_PLAYING:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_state = GAME_STATE_GAME_OVER
+        # Keyboard input
+        keys = pygame.key.get_pressed()
+        character_move()
 
+        # set cd of attack it reset after using it
         attack_timer += clock.tick(60)
-        if attack_timer >= 3500:
+        if attack_timer >= 3600:
             screen.fill((0, 255, 0))
-            keys = pygame.key.get_pressed()
             if keys[pygame.K_SPACE]:
                 attack()
                 attack_timer = 0
         else:
             screen.fill((0, 0, 0))
 
-        # Update time and score
-        update_score()
-        update_time()
-
-        # Keyboard input handling
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            character_position[1] -= character_speed
-        if keys[pygame.K_s]:
-            character_position[1] += character_speed
-        if keys[pygame.K_a]:
-            character_position[0] -= character_speed
-        if keys[pygame.K_d]:
-            character_position[0] += character_speed
-
         # Spawn enemies randomly
         spawn_timer += clock.tick(60)  # Limit the frame rate to 60 FPS
-        if spawn_timer >= 1000:  # Spawn an enemy every 1.5 second
-            r = random.randint(120 + enemy_size, 170 + enemy_size)
-            x = character_position[0] + r * math.cos(2 * math.pi * random.random())
-            y = character_position[1] + r * math.sin(2 * math.pi * random.random())
-            enemies.append(pygame.Rect(x, y, enemy_size, enemy_size))
+        if spawn_timer >= 1000:
+            spawn_enemy()  # Spawn an enemy every 1.5 second
             spawn_timer = 0
 
         # Move enemies towards the character
         for enemy in enemies:
             move_towards_character(enemy)
 
-        # Update character's rect for collision detection
-        character_rect = pygame.Rect(character_position[0], character_position[1], character_size, character_size)
-
         # Check for collision with enemies
+        character_rect = pygame.Rect(character_position[0], character_position[1], character_size, character_size)
         if check_collision():
             game_state = GAME_STATE_GAME_OVER
             end_time = pygame.time.get_ticks()  # Get the time when the game ends
 
-        # Draw the character
+        # Draw the character and enemies to update their positions on screen
         pygame.draw.rect(screen, character_color, (character_position, (character_size, character_size)))
-
-        # Draw enemies
         for enemy in enemies:
             pygame.draw.rect(screen, enemy_color, enemy)
+
+        # Update time, score and cd
+        update_score()
+        update_time()
+        update_cd()
     else:
         game_over_screen()
 
