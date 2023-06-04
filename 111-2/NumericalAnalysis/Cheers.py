@@ -576,3 +576,4 @@ def simpsons_one_third(a, b, n, func):
     integral = h / 3 * (func(a) + func(b) + 4 * sum_val1 + 2 * sum_val2)
     return integral
 
+
