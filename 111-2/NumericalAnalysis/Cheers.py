@@ -26,7 +26,8 @@ def BisectionMethod(f, x1, x2, tolerance=1e-6):
     else:
         print('Invalid Input')  # Print an error message if the input is invalid
         return 0
-           
+
+
 def Factorial(N):
     b = 1  # Initialize the factorial variable to 1
     if (float(N) >= 0.0):  # Check if the input N is a non-negative number
@@ -42,6 +43,7 @@ def Factorial(N):
     else:
         print('the wrong input')  # Print an error message if N is a negative number
 
+
 def SecantMethod(f, x0, x1, tolerance=1e-6):
     i = 0  # Initialize iteration counter
     while (abs(x0 - x1) >= tolerance):  # Loop until the absolute difference between x0 and x1 is smaller than the tolerance
@@ -51,6 +53,7 @@ def SecantMethod(f, x0, x1, tolerance=1e-6):
         x1 = x2  # Update x1 to x2
         print('in iterate: ', i, ' ,current root is: ', (x0 + x1) / 2)  # Print the current approximation and iteration count
     return (x0 + x1) / 2  # Return the final approximation of the root
+
 
 # Assist by ChatGPT
 def NewtonMethod(sympy_func, x0, tolerance=1e-6):
@@ -81,6 +84,7 @@ def NewtonMethod(sympy_func, x0, tolerance=1e-6):
         print('current ans: ', x0, ' iteration: ', i + 2)  # Print the current approximation and iteration count
     return x0  # Return the final approximation of the root
 
+
 # Assist by ChatGPT
 def TwoEquationSystem(sympy_f1, sympy_f2, x0, y0, tolerance=1e-6):
 
@@ -106,6 +110,7 @@ def TwoEquationSystem(sympy_f1, sympy_f2, x0, y0, tolerance=1e-6):
 
     return (x0, y0)  # Return the final approximation of x and y as a tuple
 
+
 def PartialPivot(A, AX, i):
     """
     Performs partial pivoting on the matrix A and the vector AX
@@ -119,6 +124,7 @@ def PartialPivot(A, AX, i):
         A[[i, max_index]] = A[[max_index, i]]
         AX[[i, max_index]] = AX[[max_index, i]]
     return A, AX
+
 
 # Old one
 def Gauss_elim(A, AX):
@@ -148,6 +154,7 @@ def Gauss_elim(A, AX):
     X = BackwardSub(A,AX)
     return X
 
+
 # Old one
 def BackwardSub(A, AX):
     '''
@@ -163,6 +170,7 @@ def BackwardSub(A, AX):
     for i in range(n-1, -1, -1):
         X[i] = (AX[i]-np.dot(A[i][:], X))/A[i][i]
     return X
+
 
 # Assist by ChatGPT
 def Gaussian_Elimination(A, AX):
@@ -194,6 +202,7 @@ def Gaussian_Elimination(A, AX):
     for i in range(n - 1, -1, -1):
         x[i] = (M[i, -1] - np.dot(M[i, :-1], x)) / M[i, i]
     return x
+
 
 # Assist by ChatGPT
 def Jacobi_iteration(A, AX, x0=None, tol = 0.05, max_iter=1000):
@@ -236,6 +245,7 @@ def Jacobi_iteration(A, AX, x0=None, tol = 0.05, max_iter=1000):
     print('iteration = ',num_iter)
     return x
 
+
 # Assist by ChatGPT
 def Gauss_seidel(A, AX, tol=0.05, max_iter = 1000):
     """
@@ -265,6 +275,7 @@ def Gauss_seidel(A, AX, tol=0.05, max_iter = 1000):
 
     return x
 
+
 # Written by Z,L,Lin
 def Least_Square_Regression(X, Y):
     '''
@@ -282,6 +293,7 @@ def Least_Square_Regression(X, Y):
     a0 = np.average(Y) - a1 * np.average(X)
     Coefficient = np.array([a0, a1])  # Combine the coefficients into a NumPy array
     return Coefficient  # Return the coefficient of the regression line as a NumPy array
+
 
 def poly_regress(x, y, order):
     """
@@ -302,6 +314,7 @@ def poly_regress(x, y, order):
     cXY = Gaussian_Elimination(A, AX)  # cXY is a 1D array of length (order+1) representing the coefficients of the polynomial regression
     return cXY  # Return the coefficients of the Polynomial Regression
 
+
 # Written by Z,L,Lin
 def Regression_Line(X, Coefficients):
     '''
@@ -319,4 +332,247 @@ def Regression_Line(X, Coefficients):
     for i in range(n):  # Loop through each coefficient
         RL += Coefficients[i] * X ** i  # Compute the contribution of each coefficient to the regressed value
     return RL  # Return the regressed value
+
+
+def Slope_2D(x, y, ODE_func):
+    Slope = ODE_func(x,y)
+    return Slope
+
+
+def Slope_3D(x, y, z, ODE_func):
+    Slope = ODE_func(x,y,z)
+    return Slope
+
+
+def Solve_Euler(x, y_initial, ODE_func, h):
+    '''
+    Args:
+        x: NDarray
+        y_initial: A initial value of y
+        ODE_func: the ode function want to solve
+        h: the step between two x
+
+    Returns:
+        x, y: NDarray
+    '''
+    length = int((x[-1] - x[0]) // h + 1)
+    x = np.linspace(1,19,int(18//h+1),dtype=float)
+    y = np.zeros(length,dtype=float)
+    y[0] = y_initial
+
+    for i in range(length-1):
+        x[i+1] = x[i] + h
+        y[i+1] = y[i] + h*Slope_2D(x[i], y[i], ODE_func)
+
+    return x, y
+
+
+def Solve_ModEuler(x, y_initial, ODE_func, h):
+    '''
+    Args:
+        x: NDarray
+        y_initial: A initial value of y
+        ODE_func: the ode function want to solve
+        h: the step between two x
+
+    Returns:
+        x, y: NDarray
+    '''
+    length = int((x[-1] - x[0]) // h + 1)
+    x = np.linspace(1,19,int(18//h+1),dtype=float)
+    y = np.zeros(length,dtype=float)
+    y[0] = y_initial
+
+    for i in range(length-1):
+        x[i+1] = x[i] + h
+        sp1 = Slope_2D(x[i], y[i], ODE_func)
+        yEu = y[i] + sp1 * h
+        sp2 = Slope_2D(x[i+1], yEu, ODE_func)
+        y[i+1] = y[i] + h * (sp1 + sp2) / 2
+
+    return x, y
+
+
+def Solve_RK4(x, y_initial, ODE_func, h):
+    '''
+    Args:
+        x: NDarray
+        y_initial: A initial value of y
+        ODE_func: the ode function want to solve
+        h: the step between two x
+
+    Returns:
+        x, y: NDarray
+    '''
+    length = int((x[-1] - x[0]) // h + 1)
+    x = np.linspace(1,19,int(18//h+1),dtype=float)
+    y = np.zeros(length,dtype=float)
+    y[0] = y_initial
+
+    for i in range(length-1):
+        x[i+1] = x[i] + h
+        sp1 = Slope_2D(x[i], y[i], ODE_func)
+        sp2 = Slope_2D(x[i] + 0.5*h, y[i] + 0.5*sp1*h, ODE_func)
+        sp3 = Slope_2D(x[i] + 0.5*h, y[i] + 0.5*sp2*h, ODE_func)
+        sp4 = Slope_2D(x[i] + h, y[i] + sp3*h, ODE_func)
+        y[i+1] = y[i] + h * (sp1 + 2*sp2 + 2*sp3 + sp4) / 6
+
+    return x, y
+
+
+def ODE2_Euler(x, y_initial, z_initial, ODE_func1, ODE_func2, h):
+    '''
+    Args:
+        x: NDarray
+        y_initial: A initial value of y
+        z_initial: A initial value of z
+        ODE_func1, ODE_func2: the ode functions we want to solve
+        h: the step between two x
+
+    Returns:
+        x, y, z: NDarray
+    '''
+    y = np.zeros(len(x),dtype=float)
+    z = np.zeros(len(x),dtype=float)
+
+    y[0] = y_initial
+    z[0] = z_initial
+
+    for i in range(len(x)-1):
+        x[i+1] = (x[i] + h)
+        y[i+1] = (y[i] + h*Slope_3D(x[i], y[i], z[i], ODE_func1))
+        z[i+1] = (z[i] + h*Slope_3D(x[i], y[i], z[i], ODE_func2))
+
+    return x, y, z
+
+
+# Define function solving 2-ODEs system
+def ODE2_RK4(x, y_initial, z_initial, ODE_func1, ODE_func2, h):
+    '''
+    Args:
+        x: NDarray
+        y_initial: A initial value of y
+        z_initial: A initial value of z
+        ODE_func1, ODE_func2: the ode functions we want to solve
+        h: the step between two x
+
+    Returns:
+        x, y, z: NDarray
+    '''
+    y = np.zeros(len(x),dtype=float)
+    z = np.zeros(len(x),dtype=float)
+
+    y[0] = y_initial
+    z[0] = z_initial
+
+    for i in range(len(x)-1):
+        x[i+1] = x[i] + h
+        sp1 = Slope_3D(x[i], y[i], z[i], ODE_func1)
+        sp12 = Slope_3D(x[i], y[i], z[i], ODE_func2)
+
+        sp2 = Slope_3D(x[i] + 0.5*h, y[i] + 0.5*sp1*h, z[i] + 0.5*sp12*h, ODE_func1)
+        sp22 = Slope_3D(x[i] + 0.5*h, y[i] + 0.5*sp1*h, z[i] + 0.5*sp12*h, ODE_func2)
+
+        sp3 = Slope_3D(x[i] + 0.5*h, y[i] + 0.5*sp2*h, z[i] + 0.5*sp22*h, ODE_func1)
+        sp32 = Slope_3D(x[i] + 0.5*h, y[i] + 0.5*sp2*h, z[i] + 0.5*sp22*h, ODE_func2)
+
+        sp4 = Slope_3D(x[i] + h, y[i] + sp3*h, z[i] + sp32*h, ODE_func1)
+        sp42 = Slope_3D(x[i] + h, y[i] + sp3*h, z[i] + sp32*h, ODE_func2)
+
+        y[i+1] = y[i] + h * (sp1 + 2*sp2 + 2*sp3 + sp4) / 6
+        z[i+1] = z[i] + h * (sp12 + 2*sp22 + 2*sp32 + sp42) / 6
+
+    return x, y, z
+
+
+def ODEs_Solve_RK4(ODE_funcs, p0, vars, h):
+    '''
+    Args:
+        ODE_funcs: a List of ode functions we want to solve
+        p0: a initial value of dependent variable
+        vars: a List of initial value of variables
+        h: the step between two x
+
+    Returns:
+        v4: a tuple of NDarrays
+    '''
+    n = len(vars) # number of variables
+    p = p0 # initial values of dependent variables
+
+    # initialize arrays with zeros
+    k1 = np.zeros(n)
+    k2 = np.zeros(n)
+    k3 = np.zeros(n)
+    k4 = np.zeros(n)
+    v1 = np.zeros(n)
+    v2 = np.zeros(n)
+    v3 = np.zeros(n)
+    v4 = np.zeros(n)
+
+    for i in range(n):  # calculate k1 and v1 for each dependent variable
+        k1[i] = ODE_funcs[i](p, *vars) 
+        v1[i] = vars[i] + k1[i] * h / 2 
+
+    p = p0 + h / 2  # update the value of the independent variable
+    for i in range(n): 
+        k2[i] = ODE_funcs[i](p, *v1) 
+        v2[i] = vars[i] + k2[i] * h / 2 
+
+    p = p0 + h / 2
+    for i in range(n):
+        k3[i] = ODE_funcs[i](p, *v2)
+        v3[i] = vars[i] + k3[i] * h
+
+    p = p0 + h
+    for i in range(n):
+        k4[i] = ODE_funcs[i](p, *v3)
+        v4[i] = vars[i] + (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) * h / 6  # calculate the final value of the ith dependent variable using the weighted average of k1, k2, k3, and k4
+
+    return tuple(v4)  # return the final values of the dependent variables as a tuple
+
+
+def trapezoidal_method(a, b, n, func):
+    '''
+    Args:
+        a: lower limit
+        b: upper limit
+        n: how many slice
+        func: the function we want to apply integral
+    
+    Returns:
+        integral: value of integration
+    '''
+    h = ((b - a) / n)
+    sum_val = 0
+    for i in range(1, n):
+        x = a + i * h
+        sum_val += func(x)
+    integral = h / 2 * (func(a) + func(b) + 2 * sum_val)
+    return integral
+
+
+def simpsons_one_third(a, b, n, func):
+    '''
+    Args:
+        a: lower limit
+        b: upper limit
+        n: how many slice
+        func: the function we want to apply integral
+    
+    Returns:
+        integral: value of integration
+    '''
+    h = ((b - a) / n)
+    sum_val1 = 0
+    sum_val2 = 0
+
+    for i in range(1, n):
+        x = a + i * h
+        if i % 2 == 0:
+            sum_val2 += func(x)
+        else:
+            sum_val1 += func(x)
+
+    integral = h / 3 * (func(a) + func(b) + 4 * sum_val1 + 2 * sum_val2)
+    return integral
 
