@@ -10,7 +10,7 @@ Ci = 1  # Concentration in river in mol/m^3
 q = 12e4  # Exchange volume rate in m^3/year
 
 # Time parameters
-dt = 0.001  # Time step in years
+dt = 0.01  # Time step in years
 t_total = 10000  # Total time in years
 num_steps = int(t_total / dt) + 1
 
