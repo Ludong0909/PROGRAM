@@ -10,8 +10,8 @@ Ci = 1  # Concentration in river in mol/m^3
 q = 12e4  # Exchange volume rate in m^3/year
 
 # Time parameters
-dt = 0.01  # Time step in years
-t_total = 100  # Total time in years
+dt = 0.001  # Time step in years
+t_total = 10000  # Total time in years
 num_steps = int(t_total / dt) + 1
 
 # Initial concentrations
@@ -27,8 +27,8 @@ C2[0] = C2_initial
 # Numerical integration using Euler Forward method
 for i in range(1, num_steps):
     # Calculate time derivative at previous time step
-    dC1_dt = (Q * Ci - Q * C1[i - 1]) / (A * h1) - (q * (C1[i - 1] - C2[i - 1])) / A
-    dC2_dt = (q * (C1[i - 1] - C2[i - 1])) / A
+    dC1_dt = (Q * Ci - Q * C1[i - 1] + q*C2[i-1] - q*C1[i-1]) / (A * h1) 
+    dC2_dt = (q * (C1[i - 1] - C2[i - 1])) / (A * h2)
 
     # Update concentrations using Euler Forward method
     C1[i] = C1[i - 1] + dt * dC1_dt

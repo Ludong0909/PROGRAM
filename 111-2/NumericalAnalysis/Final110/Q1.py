@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-D = 1
+D = 2
 dt = 5e-5
 dx = 0.02
 T = 0.05
@@ -32,6 +32,7 @@ plt.plot(x, u[:, 999], label='t=1000')
 plt.xlabel('x')
 plt.ylabel('u')
 plt.ylim(0,)
+plt.xlim(0,1)
 plt.title('Distribution of u')
 plt.savefig('Diffusion.png', dpi=500)
 plt.legend()
